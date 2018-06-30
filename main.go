@@ -4,39 +4,58 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
 
-type Person struct {
-	ID        string   `json:"id,omitempty"`
-	Firstname string   `json:"firstname,omitempty"`
-	Lastname  string   `json:"lastname,omitempty"`
-	Address   *Address `json:"address,omitempty"`
-}
-type Address struct {
-	City  string `json:"city,omitempty"`
-	State string `json:"state,omitempty"`
-}
-
-var people []Person
-
-func GetPeople(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(people)
-}
-func GetPerson(w http.ResponseWriter, r *http.Request)    {}
-func CreatePerson(w http.ResponseWriter, r *http.Request) {}
-func DeletePerson(w http.ResponseWriter, r *http.Request) {}
-
 func main() {
-	router := mux.NewRouter()
-	router.HandleFunc("/people", GetPeople).Methods("GET")
-	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
-	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
-	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
-	log.Fatal(http.ListenAndServe(":8000", router))
 
-	people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
-	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
-	people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"})
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/test", Test)
+	router.HandleFunc("/hola/{name}", Hola)
+
+	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	response := HipChatResponse{Color: "yellow", Message: "This is a Test", Notify: "false", MessageFormat: "text"}
+	json.NewEncoder(w).Encode(response)
+}
+
+func Hola(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+	response := HipChatResponse{Color: "yellow", Message: "Hola " + name, Notify: "false", MessageFormat: "text"}
+	json.NewEncoder(w).Encode(response)
+}
+
+type HipChatResponse struct {
+	Color         string `json:"color"`
+	Message       string `json:"message"`
+	Notify        string `json:"notify"`
+	MessageFormat string `json:"message_format"`
+}
+
+type HipChatrequest struct {
+	Event string `json:"event"`
+	Item  struct {
+		Message struct {
+			Date time.Time `json:"date"`
+			From struct {
+				ID          int    `json:"id"`
+				MentionName string `json:"mention_name"`
+				Name        string `json:"name"`
+			} `json:"from"`
+			ID       string        `json:"id"`
+			Mentions []interface{} `json:"mentions"`
+			Message  string        `json:"message"`
+			Type     string        `json:"type"`
+		} `json:"message"`
+		Room struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		} `json:"room"`
+	} `json:"item"`
+	WebhookID int `json:"webhook_id"`
 }
