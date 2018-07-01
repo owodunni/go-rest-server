@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/owodunni/simplelib"
 )
 
 func main() {
@@ -33,7 +34,9 @@ func Hola(w http.ResponseWriter, r *http.Request) {
 func Validate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	cdKey := vars["CD-KEY"]
-	response := ValidateResponse{CdKey: "Valid cdKey " + cdKey}
+	c := simplelib.NewSimpleClass()
+	s := c.Verify(cdKey)
+	response := ValidateResponse{CdKey: s}
 	json.NewEncoder(w).Encode(response)
 }
 
