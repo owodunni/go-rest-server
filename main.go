@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -14,6 +13,7 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/test", Test)
 	router.HandleFunc("/hola/{name}", Hola)
+	router.HandleFunc("/validate/{CD-KEY}", Validate)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
@@ -30,6 +30,13 @@ func Hola(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func Validate(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	cdKey := vars["CD-KEY"]
+	response := ValidateResponse{CdKey: "Valid cdKey " + cdKey}
+	json.NewEncoder(w).Encode(response)
+}
+
 type HipChatResponse struct {
 	Color         string `json:"color"`
 	Message       string `json:"message"`
@@ -37,25 +44,6 @@ type HipChatResponse struct {
 	MessageFormat string `json:"message_format"`
 }
 
-type HipChatrequest struct {
-	Event string `json:"event"`
-	Item  struct {
-		Message struct {
-			Date time.Time `json:"date"`
-			From struct {
-				ID          int    `json:"id"`
-				MentionName string `json:"mention_name"`
-				Name        string `json:"name"`
-			} `json:"from"`
-			ID       string        `json:"id"`
-			Mentions []interface{} `json:"mentions"`
-			Message  string        `json:"message"`
-			Type     string        `json:"type"`
-		} `json:"message"`
-		Room struct {
-			ID   int    `json:"id"`
-			Name string `json:"name"`
-		} `json:"room"`
-	} `json:"item"`
-	WebhookID int `json:"webhook_id"`
+type ValidateResponse struct {
+	CdKey string `json:"CdKey"`
 }
